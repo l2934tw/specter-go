@@ -22,7 +22,8 @@ func registerWelcome(r *core.Router) {
 				sub("join", "Configure the channel welcome message",
 					optBool("enabled", "Turn the join message on or off", true),
 					optChannel("channel", "Channel to post welcomes in", false),
-					optString("message", "Message text. Placeholders: {user} {username} {server} {membercount}", false)),
+					optString("message", "Message text. Placeholders: {user} {username} {server} {membercount}", false),
+					optBool("image", "Send a generated welcome card", false)),
 				sub("leave", "Configure the goodbye message",
 					optBool("enabled", "Turn the leave message on or off", true),
 					optChannel("channel", "Channel to post goodbyes in", false),
@@ -59,6 +60,9 @@ func handleWelcome(c *core.Context) {
 		if c.HasOpt("message") {
 			m := c.StringOpt("message", "")
 			cfg.JoinMessage = &m
+		}
+		if c.HasOpt("image") {
+			cfg.JoinImageEnabled = c.BoolOpt("image", cfg.JoinImageEnabled)
 		}
 		saveWelcome(c, ctx, cfg)
 	case "leave":
@@ -112,7 +116,6 @@ func previewWelcome(c *core.Context, cfg *queries.WelcomeConfig) {
 	_ = c.Reply(c.Embed().Title("Welcome Preview").Description(rendered).Build())
 }
 
-// renderPreview substitutes placeholders for a /welcome test preview.
 func renderPreview(c *core.Context, tmpl string, u *discordgo.User) string {
 	server := "the server"
 	count := 0
@@ -135,6 +138,7 @@ func welcomeEmbed(c *core.Context, cfg *queries.WelcomeConfig) *discordgo.Messag
 	b := c.Embed().Title("Welcome Configuration").
 		Field("Join Message", onOff(cfg.JoinEnabled), true).
 		Field("Join Channel", channelMention(cfg.JoinChannelID), true).
+		Field("Welcome Card", onOff(cfg.JoinImageEnabled), true).
 		Field("Welcome DM", onOff(cfg.JoinDMEnabled), true).
 		Field("Leave Message", onOff(cfg.LeaveEnabled), true).
 		Field("Leave Channel", channelMention(cfg.LeaveChannelID), true).
