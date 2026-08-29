@@ -6,7 +6,7 @@ lavalink:
   # Plugins are downloaded automatically on first start into ./plugins.
   plugins:
     # YouTube + YouTube Music (replaces Lavalink's deprecated built-in source).
-    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.1"
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.2"
       snapshot: false
     # Spotify / Apple Music / Deezer metadata resolution (streams via YouTube).
     - dependency: "com.github.topi314.lavasrc:lavasrc-plugin:4.8.3"
@@ -47,39 +47,45 @@ lavalink:
 plugins:
   youtube:
     enabled: true
-    allowSearch: true # enables "ytsearch:" and "ytmsearch:"
+    allowSearch: true
     allowDirectVideoIds: true
     allowDirectPlaylistIds: true
-    # Queried in order; this set is the current recommendation for reliability.
+
     clients:
       - MUSIC
       - ANDROID_VR
       - WEB
       - WEBEMBEDDED
+
   lavasrc:
     sources:
-      spotify: true # Spotify (resolved/streamed via the youtube provider below)
+      spotify: true
       applemusic: false
       deezer: false
       yandexmusic: false
       flowerytts: false
-      youtube: true # let LavaSrc hand Spotify tracks to YouTube for playback
+      youtube: true
+
     spotify:
-      # These come from the SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET env vars
-      # passed to the container. Leave unset to disable Spotify (other sources
-      # keep working).
       clientId: "${SPOTIFY_CLIENT_ID:}"
       clientSecret: "${SPOTIFY_CLIENT_SECRET:}"
       countryCode: "US"
       playlistLoadLimit: 6
       albumLoadLimit: 6
+
     providers:
-      - "ytsearch:\"%ISRC%\"" # most accurate: match by recording ID
+      - "ytsearch:\"%ISRC%\""
       - "ytsearch:%QUERY%"
 
 logging:
   level:
     root: INFO
     lavalink: INFO
+
   request:
-    enabled: false
+    enabled: true
+    includeClientInfo: true
+    includeHeaders: false
+    includeQueryString: true
+    includePayload: true
+    maxPayloadLength: 10000
