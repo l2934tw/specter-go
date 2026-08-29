@@ -1,47 +1,45 @@
 {{template "head" .}}
 {{template "guildnav" .}}
-<h1 class="text-2xl font-semibold mb-1">Welcome &amp; Goodbye</h1>
-<p class="text-zinc-500 text-sm mb-6">Placeholders: <code>{user}</code> <code>{username}</code> <code>{server}</code> <code>{membercount}</code></p>
+<div class="flex items-end justify-between gap-4 mb-7">
+  <div>
+    <p class="text-xs uppercase tracking-[0.2em] text-indigo-400 mb-2">Server Experience</p>
+    <h1 class="text-3xl font-semibold tracking-tight">Welcome &amp; Goodbye</h1>
+    <p class="text-zinc-500 text-sm mt-2">Configure member greetings and generated welcome cards.</p>
+  </div>
+</div>
 {{with .Data.Config}}
-<form method="post" class="space-y-6 max-w-lg">
-  <div class="space-y-3 border-t border-zinc-800 pt-4">
-    <h2 class="text-sm uppercase tracking-wide text-zinc-400">Join message</h2>
-    <label class="flex items-center gap-2"><input type="checkbox" name="join_enabled" {{if .JoinEnabled}}checked{{end}}><span>Post a welcome message</span></label>
-    <div>
-      <label class="block text-xs text-zinc-400">Channel</label>
-      {{$sel := deref .JoinChannelID}}
-      <select name="join_channel" class="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1">
-        <option value="">(none)</option>
-        {{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $sel}}selected{{end}}>#{{.Name}}</option>{{end}}
-      </select>
+<form method="post" class="max-w-3xl space-y-5">
+  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-5">
+      <div><h2 class="font-medium">Join message</h2><p class="text-xs text-zinc-500 mt-1">Shown when a member joins the server.</p></div>
+      <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="join_enabled" {{if .JoinEnabled}}checked{{end}}><span>Enabled</span></label>
     </div>
-    <div><label class="block text-xs text-zinc-400">Message</label><textarea name="join_message" rows="2" class="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1">{{deref .JoinMessage}}</textarea></div>
-  </div>
-
-  <div class="space-y-3 border-t border-zinc-800 pt-4">
-    <h2 class="text-sm uppercase tracking-wide text-zinc-400">Welcome DM</h2>
-    <label class="flex items-center gap-2"><input type="checkbox" name="join_dm_enabled" {{if .JoinDMEnabled}}checked{{end}}><span>DM new members</span></label>
-    <div><label class="block text-xs text-zinc-400">DM message</label><textarea name="join_dm_message" rows="2" class="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1">{{deref .JoinDMMessage}}</textarea></div>
-  </div>
-
-  <div class="space-y-3 border-t border-zinc-800 pt-4">
-    <h2 class="text-sm uppercase tracking-wide text-zinc-400">Goodbye message</h2>
-    <label class="flex items-center gap-2"><input type="checkbox" name="leave_enabled" {{if .LeaveEnabled}}checked{{end}}><span>Post a goodbye message</span></label>
-    <div>
-      <label class="block text-xs text-zinc-400">Channel</label>
-      {{$lsel := deref .LeaveChannelID}}
-      <select name="leave_channel" class="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1">
-        <option value="">(none)</option>
-        {{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $lsel}}selected{{end}}>#{{.Name}}</option>{{end}}
-      </select>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div><label class="block text-xs text-zinc-400 mb-2">Channel</label>{{$sel := deref .JoinChannelID}}<select name="join_channel" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5"><option value="">(none)</option>{{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $sel}}selected{{end}}>#{{.Name}}</option>{{end}}</select></div>
+      <div><label class="block text-xs text-zinc-400 mb-2">Generated welcome card</label><div class="rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-300">{{if .JoinImageEnabled}}Enabled{{else}}Disabled{{end}} <span class="text-zinc-600">•</span> configured by <code>/welcome join image</code></div></div>
     </div>
-    <div><label class="block text-xs text-zinc-400">Message</label><textarea name="leave_message" rows="2" class="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1">{{deref .LeaveMessage}}</textarea></div>
-  </div>
+    <div class="mt-4"><label class="block text-xs text-zinc-400 mb-2">Message</label><textarea name="join_message" rows="3" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5">{{deref .JoinMessage}}</textarea><p class="text-xs text-zinc-600 mt-2">Placeholders: <code>{user}</code> <code>{username}</code> <code>{server}</code> <code>{membercount}</code></p></div>
+  </section>
 
-  <div class="border-t border-zinc-800 pt-4">
-    <label class="flex items-center gap-2"><input type="checkbox" name="use_embed" {{if .UseEmbed}}checked{{end}}><span>Send as embeds (otherwise plain text)</span></label>
-  </div>
-  <button class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 font-medium">Save</button>
+  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-4"><div><h2 class="font-medium">Welcome DM</h2><p class="text-xs text-zinc-500 mt-1">Optional private greeting for new members.</p></div><label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="join_dm_enabled" {{if .JoinDMEnabled}}checked{{end}}><span>Enabled</span></label></div>
+    <textarea name="join_dm_message" rows="3" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5">{{deref .JoinDMMessage}}</textarea>
+  </section>
+
+  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
+    <div class="flex items-center justify-between mb-5"><div><h2 class="font-medium">Goodbye message</h2><p class="text-xs text-zinc-500 mt-1">Sent when a member leaves the server.</p></div><label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="leave_enabled" {{if .LeaveEnabled}}checked{{end}}><span>Enabled</span></label></div>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div><label class="block text-xs text-zinc-400 mb-2">Channel</label>{{$lsel := deref .LeaveChannelID}}<select name="leave_channel" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5"><option value="">(none)</option>{{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $lsel}}selected{{end}}>#{{.Name}}</option>{{end}}</select></div>
+      <div></div>
+    </div>
+    <div class="mt-4"><label class="block text-xs text-zinc-400 mb-2">Message</label><textarea name="leave_message" rows="3" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5">{{deref .LeaveMessage}}</textarea></div>
+  </section>
+
+  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
+    <div class="flex items-center justify-between"><div><h2 class="font-medium">Message format</h2><p class="text-xs text-zinc-500 mt-1">Use embeds for a cleaner Discord presentation.</p></div><label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="use_embed" {{if .UseEmbed}}checked{{end}}><span>Use embeds</span></label></div>
+  </section>
+
+  <button class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 font-medium transition">Save changes</button>
 </form>
 {{end}}
 {{template "foot" .}}
