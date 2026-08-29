@@ -49,10 +49,11 @@ func (h *Handlers) handleWelcomeJoin(s *discordgo.Session, m *discordgo.GuildMem
 				memberCount = g.MemberCount
 			}
 			card, err = levelsvc.RenderWelcomeCard(ctx, levelsvc.WelcomeCardData{
-				Username:    m.User.Username,
-				AvatarURL:   discordutil.AvatarURL(m.User),
-				ServerName:  serverName,
-				MemberCount: memberCount,
+				Username:       m.User.Username,
+				AvatarURL:      discordutil.AvatarURL(m.User),
+				ServerName:     serverName,
+				MemberCount:    memberCount,
+				BackgroundPath: derefString(cfg.JoinImagePath),
 			})
 			if err != nil {
 				log.Warn().Err(err).Str("guild", m.GuildID).Msg("welcome: render card")
@@ -67,6 +68,13 @@ func (h *Handlers) handleWelcomeJoin(s *discordgo.Session, m *discordgo.GuildMem
 			sendWelcome(s, m.GuildID, ch.ID, renderWelcome(s, *cfg.JoinDMMessage, m.GuildID, m.User), cfg.UseEmbed, "Welcome", nil)
 		}
 	}
+}
+
+func derefString(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
 }
 
 func (h *Handlers) handleWelcomeLeave(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
@@ -95,11 +103,8 @@ func sendWelcome(s *discordgo.Session, guildID, channelID, text string, useEmbed
 	if strings.TrimSpace(text) == "" && len(card) == 0 {
 		return
 	}
-
 	if len(card) > 0 {
-		msg := &discordgo.MessageSend{
-			Files: []*discordgo.File{{Name: "welcome.png", ContentType: "image/png", Reader: bytes.NewReader(card)}},
-		}
+		msg := &discordgo.MessageSend{Files: []*discordgo.File{{Name: "welcome.png", ContentType: "image/png", Reader: bytes.NewReader(card)}}}
 		if useEmbed {
 			msg.Embed = embed.New(s, guildID).Title(title).Description(text).Image("attachment://welcome.png").Build()
 		} else {
@@ -111,7 +116,6 @@ func sendWelcome(s *discordgo.Session, guildID, channelID, text string, useEmbed
 			log.Warn().Err(err).Str("guild", guildID).Msg("welcome: send card")
 		}
 	}
-
 	if useEmbed {
 		e := embed.New(s, guildID).Title(title).Description(text).Build()
 		_, _ = s.ChannelMessageSendEmbed(channelID, e)
@@ -147,7 +151,6 @@ func (h *Handlers) applyAutorole(s *discordgo.Session, m *discordgo.GuildMemberA
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
 	cfg, err := h.deps.Store.GetAutoroleConfig(ctx, m.GuildID)
 	if err != nil || !cfg.Enabled {
 		return
