@@ -52,7 +52,7 @@ func RenderWelcomeCard(ctx context.Context, d WelcomeCardData) ([]byte, error) {
 }
 
 func RenderLevelUpCard(ctx context.Context, d LevelUpCardData) ([]byte, error) {
-	const w, h = 1000, 300; dc := gg.NewContext(w, h)
+	const w, h = 1080, 1080; dc := gg.NewContext(w, h)
 	dc.SetRGB(0.045, 0.050, 0.070); dc.Clear(); dc.SetRGB(0.075, 0.085, 0.115); dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26); dc.Fill()
 	dc.SetRGB(0.38, 0.42, 0.98); dc.DrawRoundedRectangle(42, 42, 180, 216, 18); dc.Fill()
 	if err := dc.LoadFontFace(findFont(), 16); err == nil { dc.SetRGB(0.84, 0.86, 1.0); dc.DrawStringAnchored("LEVEL UP", 132, 92, 0.5, 0.5) }
