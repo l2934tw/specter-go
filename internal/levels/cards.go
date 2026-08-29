@@ -4,16 +4,20 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
+	"image/draw"
+	"os"
 
 	"github.com/fogleman/gg"
 )
 
 // WelcomeCardData contains the data used to render a welcome card.
 type WelcomeCardData struct {
-	Username    string
-	AvatarURL   string
-	ServerName  string
-	MemberCount int
+	Username      string
+	AvatarURL     string
+	ServerName    string
+	MemberCount   int
+	BackgroundPath string
 }
 
 // LevelUpCardData contains the data used to render a level-up card.
@@ -26,15 +30,25 @@ type LevelUpCardData struct {
 }
 
 // RenderWelcomeCard renders a clean welcome image without glow effects.
+// If BackgroundPath is set and points to a valid image, it is used as the card
+// background with a readable dark overlay.
 func RenderWelcomeCard(ctx context.Context, d WelcomeCardData) ([]byte, error) {
 	const w, h = 1000, 300
 	dc := gg.NewContext(w, h)
 
-	dc.SetRGB(0.045, 0.050, 0.070)
-	dc.Clear()
-	dc.SetRGB(0.075, 0.085, 0.115)
-	dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26)
-	dc.Fill()
+	if bg := loadImage(d.BackgroundPath); bg != nil {
+		dc.DrawImageAnchored(coverImage(bg, w, h), w/2, h/2, 0.5, 0.5)
+		// Keep text readable without using glow.
+		dc.SetRGBA(0.02, 0.025, 0.04, 0.58)
+		dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26)
+		dc.Fill()
+	} else {
+		dc.SetRGB(0.045, 0.050, 0.070)
+		dc.Clear()
+		dc.SetRGB(0.075, 0.085, 0.115)
+		dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26)
+		dc.Fill()
+	}
 
 	dc.SetRGB(0.38, 0.42, 0.98)
 	dc.DrawRoundedRectangle(42, 42, 8, 216, 4)
@@ -59,7 +73,7 @@ func RenderWelcomeCard(ctx context.Context, d WelcomeCardData) ([]byte, error) {
 
 	font := findFont()
 	if err := dc.LoadFontFace(font, 18); err == nil {
-		dc.SetRGB(0.58, 0.61, 0.70)
+		dc.SetRGB(0.72, 0.75, 0.83)
 		dc.DrawString("WELCOME TO", 270, 105)
 	}
 	if err := dc.LoadFontFace(font, 38); err == nil {
@@ -67,11 +81,11 @@ func RenderWelcomeCard(ctx context.Context, d WelcomeCardData) ([]byte, error) {
 		dc.DrawString(truncate(d.ServerName, 34), 270, 145)
 	}
 	if err := dc.LoadFontFace(font, 22); err == nil {
-		dc.SetRGB(0.78, 0.80, 0.87)
+		dc.SetRGB(0.82, 0.84, 0.90)
 		dc.DrawString(fmt.Sprintf("Welcome, %s", truncate(d.Username, 28)), 270, 185)
 	}
 	if err := dc.LoadFontFace(font, 17); err == nil {
-		dc.SetRGB(0.52, 0.55, 0.64)
+		dc.SetRGB(0.64, 0.67, 0.75)
 		dc.DrawString(fmt.Sprintf("Member #%d", d.MemberCount), 270, 220)
 	}
 
@@ -82,14 +96,12 @@ func RenderWelcomeCard(ctx context.Context, d WelcomeCardData) ([]byte, error) {
 func RenderLevelUpCard(ctx context.Context, d LevelUpCardData) ([]byte, error) {
 	const w, h = 1000, 300
 	dc := gg.NewContext(w, h)
-
 	dc.SetRGB(0.045, 0.050, 0.070)
 	dc.Clear()
 	dc.SetRGB(0.075, 0.085, 0.115)
 	dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26)
 	dc.Fill()
 
-	// Flat accent block; intentionally no glow effects.
 	dc.SetRGB(0.38, 0.42, 0.98)
 	dc.DrawRoundedRectangle(42, 42, 180, 216, 18)
 	dc.Fill()
@@ -132,14 +144,49 @@ func RenderLevelUpCard(ctx context.Context, d LevelUpCardData) ([]byte, error) {
 		dc.SetRGB(0.58, 0.61, 0.70)
 		dc.DrawString("Congratulations! You reached a new level.", 365, 145)
 	}
-
 	stats := fmt.Sprintf("Rank #%d    •    %d XP", d.Rank, d.XP)
 	if err := dc.LoadFontFace(findFont(), 18); err == nil {
 		dc.SetRGB(0.78, 0.80, 0.87)
 		dc.DrawString(stats, 365, 195)
 	}
-
 	return encodePNG(dc)
+}
+
+func loadImage(path string) image.Image {
+	if path == "" {
+		return nil
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+	img, _, err := image.Decode(f)
+	if err != nil {
+		return nil
+	}
+	return img
+}
+
+func coverImage(src image.Image, width, height int) image.Image {
+	b := src.Bounds()
+	sw, sh := float64(b.Dx()), float64(b.Dy())
+	if sw <= 0 || sh <= 0 {
+		return src
+	}
+	scale := float64(width) / sw
+	if v := float64(height) / sh; v > scale {
+		scale = v
+	}
+	nw, nh := int(sw*scale), int(sh*scale)
+	resized := image.NewRGBA(image.Rect(0, 0, nw, nh))
+	draw.CatmullRom.Scale(resized, resized.Bounds(), src, b, draw.Over, nil)
+
+	out := image.NewRGBA(image.Rect(0, 0, width, height))
+	x := (nw - width) / 2
+	y := (nh - height) / 2
+	draw.Draw(out, out.Bounds(), resized, image.Pt(x, y), draw.Src)
+	return out
 }
 
 func encodePNG(dc *gg.Context) ([]byte, error) {
