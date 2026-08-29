@@ -1,90 +1,126 @@
 server:
-  port: 2333
-  address: 0.0.0.0
+port: 2333
+address: 0.0.0.0
 
 lavalink:
-  # Plugins are downloaded automatically on first start into ./plugins.
-  plugins:
-    # YouTube + YouTube Music (replaces Lavalink's deprecated built-in source).
-    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.2"
-      snapshot: false
-    # Spotify / Apple Music / Deezer metadata resolution (streams via YouTube).
-    - dependency: "com.github.topi314.lavasrc:lavasrc-plugin:4.8.3"
-      snapshot: false
-  server:
-    password: "${LAVALINK_SERVER_PASSWORD:youshallnotpass}"
-    sources:
-      youtube: false # handled by the youtube-source plugin below
-      bandcamp: true
-      soundcloud: true
-      twitch: true
-      vimeo: true
-      nico: true
-      http: true
-      local: false
-    filters:
-      volume: true
-      equalizer: true
-      karaoke: true
-      timescale: true
-      tremolo: true
-      vibrato: true
-      distortion: true
-      rotation: true
-      channelMix: true
-      lowPass: true
-    bufferDurationMs: 400
-    frameBufferDurationMs: 5000
-    opusEncodingQuality: 10
-    resamplingQuality: LOW
-    trackStuckThresholdMs: 10000
-    useSeekGhosting: true
-    playerUpdateInterval: 5
-    youtubePlaylistLoadLimit: 6
-    youtubeSearchEnabled: true
-    soundcloudSearchEnabled: true
+plugins:
+- dependency: "dev.lavalink.youtube:youtube-plugin:1.18.2"
+snapshot: false
+
+```
+- dependency: "com.github.topi314.lavasrc:lavasrc-plugin:4.8.3"
+  snapshot: false
+```
+
+server:
+password: "${LAVALINK_SERVER_PASSWORD:youshallnotpass}"
+
+```
+sources:
+  youtube: false
+  bandcamp: true
+  soundcloud: true
+  twitch: true
+  vimeo: true
+  nico: true
+  http: true
+  local: false
+
+filters:
+  volume: true
+  equalizer: true
+  karaoke: true
+  timescale: true
+  tremolo: true
+  vibrato: true
+  distortion: true
+  rotation: true
+  channelMix: true
+  lowPass: true
+
+bufferDurationMs: 400
+frameBufferDurationMs: 5000
+opusEncodingQuality: 10
+resamplingQuality: LOW
+trackStuckThresholdMs: 10000
+useSeekGhosting: true
+playerUpdateInterval: 5
+youtubePlaylistLoadLimit: 6
+youtubeSearchEnabled: true
+soundcloudSearchEnabled: true
+```
 
 plugins:
-  youtube:
-    enabled: true
-    allowSearch: true
-    allowDirectVideoIds: true
-    allowDirectPlaylistIds: true
 
-    clients:
-      - MUSIC
-      - WEB
-      - TVHTML5EMBEDDED
+youtube:
+enabled: true
+allowSearch: true
+allowDirectVideoIds: true
+allowDirectPlaylistIds: true
 
-  lavasrc:
-    sources:
-      spotify: true
-      applemusic: false
-      deezer: false
-      yandexmusic: false
-      flowerytts: false
-      youtube: true
+```
+# Use clients that are currently supported by youtube-source 1.18.x
+clients:
+  - MUSIC
+  - WEB
+  - WEB_EMBEDDED
+  - MWEB
+  - TV
+  - TVHTML5_SIMPLY
+  - IOS
 
-    spotify:
-      clientId: "${SPOTIFY_CLIENT_ID:}"
-      clientSecret: "${SPOTIFY_CLIENT_SECRET:}"
-      countryCode: "US"
-      playlistLoadLimit: 6
-      albumLoadLimit: 6
+# YouTube authentication
+#
+# Put your YouTube OAuth refresh token in Railway:
+# YOUTUBE_REFRESH_TOKEN
+#
+# Do NOT put normal browser cookies here.
+oauth:
+  enabled: true
+  refreshToken: "${YOUTUBE_REFRESH_TOKEN:}"
+  skipInitialization: true
 
-    providers:
-      - "ytsearch:\"%ISRC%\""
-      - "ytsearch:%QUERY%"
+# Optional PoToken configuration.
+#
+# Only enable/use these if you have a valid matching pair.
+# The visitorData and poToken MUST belong together.
+#
+# pot:
+#   token: "${YOUTUBE_PO_TOKEN:}"
+#   visitorData: "${YOUTUBE_VISITOR_DATA:}"
+```
+
+lavasrc:
+sources:
+spotify: true
+applemusic: false
+deezer: false
+yandexmusic: false
+flowerytts: false
+youtube: true
+
+```
+spotify:
+  clientId: "${SPOTIFY_CLIENT_ID:}"
+  clientSecret: "${SPOTIFY_CLIENT_SECRET:}"
+  countryCode: "US"
+  playlistLoadLimit: 6
+  albumLoadLimit: 6
+
+providers:
+  - "ytsearch:\"%ISRC%\""
+  - "ytsearch:%QUERY%"
+```
 
 logging:
-  level:
-    root: INFO
-    lavalink: INFO
+level:
+root: INFO
+lavalink: INFO
 
-  request:
-    enabled: true
-    includeClientInfo: true
-    includeHeaders: false
-    includeQueryString: true
-    includePayload: true
-    maxPayloadLength: 10000
+request:
+enabled: true
+includeClientInfo: true
+includeHeaders: false
+includeQueryString: true
+includePayload: false
+maxPayloadLength: 10000
