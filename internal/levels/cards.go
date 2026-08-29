@@ -24,6 +24,9 @@ type WelcomeCardData struct {
 	ServerName    string
 	MemberCount   int
 	BackgroundURL string
+	BackgroundZoom int
+	BackgroundPosX int
+	BackgroundPosY int
 }
 
 type LevelUpCardData struct { Username string; AvatarURL string; Level int; Rank int; XP int64 }
@@ -31,8 +34,19 @@ type LevelUpCardData struct { Username string; AvatarURL string; Level int; Rank
 func RenderWelcomeCard(ctx context.Context, d WelcomeCardData) ([]byte, error) {
 	const w, h = 1080, 1080
 	dc := gg.NewContext(w, h)
+	zoom := d.BackgroundZoom
+	if zoom < 50 || zoom > 200 { zoom = 100 }
+	posX, posY := d.BackgroundPosX, d.BackgroundPosY
+	if posX < 0 || posX > 100 { posX = 50 }
+	if posY < 0 || posY > 100 { posY = 50 }
 	if bg := fetchBackground(ctx, d.BackgroundURL); bg != nil {
-		dc.DrawImageAnchored(coverImage(bg, w, h), w/2, h/2, 0.5, 0.5)
+		covered := coverImage(bg, w, h)
+		if zoom != 100 { covered = resizeImage(covered, int(float64(w)*float64(zoom)/100), int(float64(h)*float64(zoom)/100)) }
+		b := covered.Bounds()
+		x := int(float64(b.Dx()-w) * float64(posX) / 100)
+		y := int(float64(b.Dy()-h) * float64(posY) / 100)
+		if x < 0 { x = 0 }; if y < 0 { y = 0 }
+		dc.DrawImage(covered, -x, -y)
 		dc.SetRGBA(0.02, 0.025, 0.04, 0.58)
 		dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26); dc.Fill()
 	} else {
@@ -94,11 +108,11 @@ func loadImage(path string) image.Image { if path == "" { return nil }; f, err :
 func coverImage(src image.Image, width, height int) image.Image {
 	b := src.Bounds(); sw, sh := b.Dx(), b.Dy(); if sw <= 0 || sh <= 0 { return src }
 	scale := float64(width)/float64(sw); if v := float64(height)/float64(sh); v > scale { scale = v }
-	nw, nh := int(float64(sw)*scale), int(float64(sh)*scale); resized := resizeImage(src, nw, nh)
-	out := image.NewRGBA(image.Rect(0, 0, width, height)); x, y := (nw-width)/2, (nh-height)/2; draw.Draw(out, out.Bounds(), resized, image.Pt(x, y), draw.Src); return out
+	nw, nh := int(float64(sw)*scale), int(float64(sh)*scale); return resizeImage(src, nw, nh)
 }
 
 func resizeImage(src image.Image, width, height int) image.Image {
+	if width < 1 { width = 1 }; if height < 1 { height = 1 }
 	dst := image.NewRGBA(image.Rect(0, 0, width, height)); b := src.Bounds(); sw, sh := b.Dx(), b.Dy()
 	for y := 0; y < height; y++ { sy := b.Min.Y + y*sh/height; for x := 0; x < width; x++ { sx := b.Min.X + x*sw/width; dst.Set(x, y, src.At(sx, sy)) } }
 	return dst
