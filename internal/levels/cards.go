@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"image"
 
 	"github.com/fogleman/gg"
 )
@@ -90,7 +89,7 @@ func RenderLevelUpCard(ctx context.Context, d LevelUpCardData) ([]byte, error) {
 	dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26)
 	dc.Fill()
 
-	// Accent block, intentionally flat: no glow.
+	// Flat accent block; intentionally no glow effects.
 	dc.SetRGB(0.38, 0.42, 0.98)
 	dc.DrawRoundedRectangle(42, 42, 180, 216, 18)
 	dc.Fill()
@@ -158,5 +157,3 @@ func truncate(s string, max int) string {
 	}
 	return string(r[:max-1]) + "…"
 }
-
-var _ image.Image
