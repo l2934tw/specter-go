@@ -29,7 +29,7 @@ type WelcomeCardData struct {
 type LevelUpCardData struct { Username string; AvatarURL string; Level int; Rank int; XP int64 }
 
 func RenderWelcomeCard(ctx context.Context, d WelcomeCardData) ([]byte, error) {
-	const w, h = 1000, 300
+	const w, h = 1080, 1080
 	dc := gg.NewContext(w, h)
 	if bg := fetchBackground(ctx, d.BackgroundURL); bg != nil {
 		dc.DrawImageAnchored(coverImage(bg, w, h), w/2, h/2, 0.5, 0.5)
