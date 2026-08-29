@@ -1,5 +1,5 @@
-// Package levels implements the XP and leveling system: pure progression math
-// plus a message-driven engine that awards XP with cooldowns and exemptions.
+// Package levels implements the XP and leveling system: progression math plus
+// a message-driven engine that awards XP with cooldowns and exemptions.
 package levels
 
 import (
@@ -13,11 +13,10 @@ import (
 
 	"github.com/0xSalik/specter/internal/db"
 	"github.com/0xSalik/specter/internal/db/queries"
+	"github.com/0xSalik/specter/internal/discordutil"
 	"github.com/0xSalik/specter/internal/embed"
 )
 
-// LevelForXP returns the level for a given total XP using the progression
-// curve level = floor(0.1 * sqrt(xp)).
 func LevelForXP(xp int64) int {
 	if xp <= 0 {
 		return 0
@@ -25,8 +24,6 @@ func LevelForXP(xp int64) int {
 	return int(math.Floor(0.1 * math.Sqrt(float64(xp))))
 }
 
-// CalculateXPForLevel returns the minimum total XP required to reach level n.
-// It is the inverse of LevelForXP: xp = (10 * level)^2 = 100 * level^2.
 func CalculateXPForLevel(level int) int64 {
 	if level <= 0 {
 		return 0
@@ -34,7 +31,6 @@ func CalculateXPForLevel(level int) int64 {
 	return int64(100 * level * level)
 }
 
-// AwardXP picks a random XP amount in [min, max].
 func AwardXP(r *rand.Rand, min, max int) int64 {
 	if max < min {
 		max = min
@@ -45,7 +41,6 @@ func AwardXP(r *rand.Rand, min, max int) int64 {
 	return int64(min + r.Intn(max-min+1))
 }
 
-// OnCooldown reports whether a user is still within their XP cooldown window.
 func OnCooldown(last *time.Time, now time.Time, cooldownSecs int) bool {
 	if last == nil {
 		return false
@@ -53,7 +48,6 @@ func OnCooldown(last *time.Time, now time.Time, cooldownSecs int) bool {
 	return now.Sub(*last) < time.Duration(cooldownSecs)*time.Second
 }
 
-// IsExempt reports whether a user/channel combination is excluded from XP.
 func IsExempt(userRoles []string, channelID string, noXPRoles, noXPChannels []string) bool {
 	for _, c := range noXPChannels {
 		if c == channelID {
@@ -72,25 +66,21 @@ func IsExempt(userRoles []string, channelID string, noXPRoles, noXPChannels []st
 	return false
 }
 
-// Engine awards XP in response to messages.
 type Engine struct {
 	store *queries.Store
 	rng   *rand.Rand
 }
 
-// NewEngine constructs the XP engine.
 func NewEngine(store *queries.Store) *Engine {
 	return &Engine{store: store, rng: rand.New(rand.NewSource(time.Now().UnixNano()))}
 }
 
-// HandleMessage applies XP rules to a single message create event. It is safe
-// to call from the message handler goroutine; all errors are logged.
 func (e *Engine) HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author == nil || m.Author.Bot || m.GuildID == "" {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	cfg, err := e.store.GetLevelConfig(ctx, m.GuildID)
@@ -122,7 +112,6 @@ func (e *Engine) HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate)
 
 	gained := AwardXP(e.rng, cfg.XPMin, cfg.XPMax)
 
-	// Compute the prospective new total to derive the new level.
 	prev, err := e.store.GetLevel(ctx, m.GuildID, m.Author.ID)
 	var prevXP int64
 	var prevLevel int
@@ -140,18 +129,11 @@ func (e *Engine) HandleMessage(s *discordgo.Session, m *discordgo.MessageCreate)
 	}
 
 	if entry.Level > prevLevel {
-		e.announce(s, m, cfg, entry.Level)
-		var roles []string
-		if m.Member != nil {
-			roles = m.Member.Roles
-		}
+		e.announce(ctx, s, m, cfg, entry.Level, entry.XP)
 		e.applyLevelRewards(ctx, s, m.GuildID, m.Author.ID, roles, entry.Level, cfg.StackRewards)
 	}
 }
 
-// applyLevelRewards grants role rewards a member has earned at their new level.
-// When stacking is disabled, only the single highest earned reward is kept and
-// lower reward roles are removed.
 func (e *Engine) applyLevelRewards(ctx context.Context, s *discordgo.Session, guildID, userID string, currentRoles []string, level int, stack bool) {
 	rewards, err := e.store.ListLevelRewards(ctx, guildID)
 	if err != nil || len(rewards) == 0 {
@@ -163,7 +145,6 @@ func (e *Engine) applyLevelRewards(ctx context.Context, s *discordgo.Session, gu
 		held[r] = struct{}{}
 	}
 
-	// rewards are ordered ascending by level; find earned ones.
 	var earned []queries.LevelReward
 	for _, rw := range rewards {
 		if rw.Level <= level {
@@ -185,7 +166,6 @@ func (e *Engine) applyLevelRewards(ctx context.Context, s *discordgo.Session, gu
 		return
 	}
 
-	// Non-stacking: keep only the highest earned reward.
 	highest := earned[len(earned)-1].RoleID
 	if _, ok := held[highest]; !ok {
 		if err := s.GuildMemberRoleAdd(guildID, userID, highest); err != nil {
@@ -204,7 +184,7 @@ func (e *Engine) applyLevelRewards(ctx context.Context, s *discordgo.Session, gu
 	}
 }
 
-func (e *Engine) announce(s *discordgo.Session, m *discordgo.MessageCreate, cfg *queries.LevelConfig, level int) {
+func (e *Engine) announce(ctx context.Context, s *discordgo.Session, m *discordgo.MessageCreate, cfg *queries.LevelConfig, level int, xp int64) {
 	channelID := m.ChannelID
 	if cfg.AnnounceChannelID != nil && *cfg.AnnounceChannelID != "" {
 		channelID = *cfg.AnnounceChannelID
@@ -215,8 +195,29 @@ func (e *Engine) announce(s *discordgo.Session, m *discordgo.MessageCreate, cfg 
 		msg = renderAnnounce(*cfg.AnnounceMsg, m.Author.ID, level)
 	}
 
-	b := embed.New(s, m.GuildID).Title("Level Up").Description(msg)
-	if _, err := s.ChannelMessageSendEmbed(channelID, b.Build()); err != nil {
+	// Prefer the image announcement, while preserving a normal embed fallback.
+	rank, rankErr := e.store.GetRank(ctx, m.GuildID, m.Author.ID)
+	card, cardErr := RenderLevelUpCard(ctx, LevelUpCardData{
+		Username: m.Author.Username,
+		AvatarURL: discordutil.AvatarURL(m.Author),
+		Level: level,
+		Rank: rank,
+		XP: xp,
+	})
+	if cardErr == nil && rankErr == nil {
+		em := embed.New(s, m.GuildID).Title("Level Up").Description(msg).Image("attachment://levelup.png").Build()
+		_, err := s.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
+			Embed: em,
+			Files: []*discordgo.File{{Name: "levelup.png", ContentType: "image/png", Reader: bytesReader(card)}},
+		})
+		if err == nil {
+			return
+		}
+		log.Warn().Err(err).Str("guild", m.GuildID).Msg("levels: send card")
+	}
+
+	em := embed.New(s, m.GuildID).Title("Level Up").Description(msg).Build()
+	if _, err := s.ChannelMessageSendEmbed(channelID, em); err != nil {
 		log.Warn().Err(err).Str("guild", m.GuildID).Msg("levels: announce")
 	}
 }
