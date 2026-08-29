@@ -47,15 +47,13 @@ lavalink:
 plugins:
   youtube:
     enabled: true
-
-    oauth:
-      enabled: true
-      cookie: "${YOUTUBE_COOKIE}"
-      skipInitialization: true
+    allowSearch: true
+    allowDirectVideoIds: true
+    allowDirectPlaylistIds: true
 
     clients:
       - WEB
-      - WEBEMBEDDED
+      - MUSIC
       - ANDROID_VR
 
   lavasrc:
