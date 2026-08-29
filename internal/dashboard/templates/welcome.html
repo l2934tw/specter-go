@@ -1,49 +1,55 @@
 {{template "head" .}}
 {{template "guildnav" .}}
-<div class="flex items-end justify-between gap-4 mb-7">
-  <div>
-    <p class="text-xs uppercase tracking-[0.2em] text-indigo-400 mb-2">Server Experience</p>
-    <h1 class="text-3xl font-semibold tracking-tight">Welcome &amp; Goodbye</h1>
-    <p class="text-zinc-500 text-sm mt-2">Configure member greetings and your custom welcome card.</p>
-  </div>
-</div>
-{{with .Data.Config}}
-<form method="post" class="max-w-3xl space-y-5">
-  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
-    <div class="flex items-center justify-between mb-5"><div><h2 class="font-medium">Join message</h2><p class="text-xs text-zinc-500 mt-1">Shown when a member joins the server.</p></div><label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="join_enabled" {{if .JoinEnabled}}checked{{end}}><span>Enabled</span></label></div>
-    <div class="grid gap-4 md:grid-cols-2">
-      <div><label class="block text-xs text-zinc-400 mb-2">Channel</label>{{$sel := deref .JoinChannelID}}<select name="join_channel" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5"><option value="">(none)</option>{{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $sel}}selected{{end}}>#{{.Name}}</option>{{end}}</select></div>
-      <div><label class="block text-xs text-zinc-400 mb-2">Generated welcome card</label><label class="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-sm"><input type="checkbox" name="join_image_enabled" {{if .JoinImageEnabled}}checked{{end}}><span>Send welcome card</span></label></div>
+
+<div class="mb-8">
+  <div class="flex items-center gap-3 mb-3">
+    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">✦</span>
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-400">Member Experience</p>
+      <h1 class="text-3xl font-semibold tracking-tight">Welcome &amp; Goodbye</h1>
     </div>
-    <div class="mt-4"><label class="block text-xs text-zinc-400 mb-2">Message</label><textarea name="join_message" rows="3" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5">{{deref .JoinMessage}}</textarea><p class="text-xs text-zinc-600 mt-2">Placeholders: <code>{user}</code> <code>{username}</code> <code>{server}</code> <code>{membercount}</code></p></div>
+  </div>
+  <p class="max-w-2xl text-sm leading-6 text-zinc-400">Create a clean first impression for new members. Configure the message, channel, and optional custom card background from one place.</p>
+</div>
+
+{{with .Data.Config}}
+<form method="post" class="max-w-4xl space-y-5">
+  <section class="rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-6 shadow-xl shadow-black/10">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div><h2 class="text-lg font-semibold">Join experience</h2><p class="mt-1 text-sm text-zinc-500">The public greeting sent when someone joins.</p></div>
+      <label class="inline-flex cursor-pointer items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2.5 text-sm"><input type="checkbox" name="join_enabled" {{if .JoinEnabled}}checked{{end}} class="h-4 w-4 accent-indigo-500"><span>Enable welcome</span></label>
+    </div>
+    <div class="mt-6 grid gap-4 md:grid-cols-2">
+      <label class="block"><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Channel</span>{{$sel := deref .JoinChannelID}}<select name="join_channel" class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-indigo-500"><option value="">Select a channel</option>{{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $sel}}selected{{end}}>#{{.Name}}</option>{{end}}</select></label>
+      <label class="block"><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Welcome card</span><span class="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm"><input type="checkbox" name="join_image_enabled" {{if .JoinImageEnabled}}checked{{end}} class="h-4 w-4 accent-indigo-500"><span>Send an image card with the greeting</span></span></label>
+    </div>
+    <label class="mt-5 block"><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Message</span><textarea name="join_message" rows="3" class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm leading-6 outline-none transition focus:border-indigo-500">{{deref .JoinMessage}}</textarea><span class="mt-2 block text-xs text-zinc-600">Available: <code>{user}</code> <code>{username}</code> <code>{server}</code> <code>{membercount}</code></span></label>
   </section>
 
-  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
-    <div class="flex items-center justify-between mb-4"><div><h2 class="font-medium">Welcome DM</h2><p class="text-xs text-zinc-500 mt-1">Optional private greeting for new members.</p></div><label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="join_dm_enabled" {{if .JoinDMEnabled}}checked{{end}}><span>Enabled</span></label></div>
-    <textarea name="join_dm_message" rows="3" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5">{{deref .JoinDMMessage}}</textarea>
+  <section class="rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-6 shadow-xl shadow-black/10">
+    <div class="flex items-center justify-between"><div><h2 class="text-lg font-semibold">Custom card background</h2><p class="mt-1 text-sm text-zinc-500">Paste a direct HTTPS image URL. The bot downloads it when creating the card.</p></div>{{if .JoinImageURL}}<span class="rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">Configured</span>{{else}}<span class="rounded-full bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-500">Default</span>{{end}}</div>
+    <div class="mt-5 rounded-2xl border border-indigo-500/15 bg-indigo-500/5 p-4">
+      <label class="block"><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Image URL</span><input type="url" name="welcome_image_url" value="{{deref .JoinImageURL}}" placeholder="https://example.com/welcome.png" class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none transition focus:border-indigo-500"></label>
+      <p class="mt-2 text-xs leading-5 text-zinc-600">Use a direct image link ending in a supported image response. HTTPS is required and the renderer limits downloads to 10 MB.</p>
+    </div>
+    {{if .JoinImageURL}}<div class="mt-4 flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-3"><span class="max-w-[70%] truncate text-xs text-zinc-500">{{deref .JoinImageURL}}</span><button type="submit" formaction="/dashboard/{{$.GuildID}}/welcome-image-url/remove" class="rounded-lg border border-zinc-800 px-3 py-2 text-xs text-zinc-400 transition hover:bg-zinc-900 hover:text-white">Remove</button></div>{{end}}
   </section>
 
-  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
-    <div class="flex items-center justify-between mb-5"><div><h2 class="font-medium">Goodbye message</h2><p class="text-xs text-zinc-500 mt-1">Sent when a member leaves the server.</p></div><label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="leave_enabled" {{if .LeaveEnabled}}checked{{end}}><span>Enabled</span></label></div>
-    <div class="grid gap-4 md:grid-cols-2"><div><label class="block text-xs text-zinc-400 mb-2">Channel</label>{{$lsel := deref .LeaveChannelID}}<select name="leave_channel" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5"><option value="">(none)</option>{{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $lsel}}selected{{end}}>#{{.Name}}</option>{{end}}</select></div><div></div></div>
-    <div class="mt-4"><label class="block text-xs text-zinc-400 mb-2">Message</label><textarea name="leave_message" rows="3" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5">{{deref .LeaveMessage}}</textarea></div>
+  <section class="rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-6 shadow-xl shadow-black/10">
+    <div class="flex items-center justify-between mb-5"><div><h2 class="text-lg font-semibold">Welcome DM</h2><p class="mt-1 text-sm text-zinc-500">Optional private message for new members.</p></div><label class="inline-flex cursor-pointer items-center gap-3 text-sm"><input type="checkbox" name="join_dm_enabled" {{if .JoinDMEnabled}}checked{{end}} class="h-4 w-4 accent-indigo-500"><span>Enabled</span></label></div>
+    <textarea name="join_dm_message" rows="3" class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm leading-6 outline-none transition focus:border-indigo-500">{{deref .JoinDMMessage}}</textarea>
   </section>
 
-  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
-    <div class="flex items-center justify-between"><div><h2 class="font-medium">Message format</h2><p class="text-xs text-zinc-500 mt-1">Use embeds for a cleaner Discord presentation.</p></div><label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="use_embed" {{if .UseEmbed}}checked{{end}}><span>Use embeds</span></label></div>
+  <section class="rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-6 shadow-xl shadow-black/10">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><h2 class="text-lg font-semibold">Goodbye</h2><p class="mt-1 text-sm text-zinc-500">A clean farewell when a member leaves.</p></div><label class="inline-flex cursor-pointer items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2.5 text-sm"><input type="checkbox" name="leave_enabled" {{if .LeaveEnabled}}checked{{end}} class="h-4 w-4 accent-indigo-500"><span>Enable goodbye</span></label></div>
+    <div class="mt-5 grid gap-4"><label class="block"><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Channel</span>{{$lsel := deref .LeaveChannelID}}<select name="leave_channel" class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm outline-none focus:border-indigo-500"><option value="">Select a channel</option>{{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $lsel}}selected{{end}}>#{{.Name}}</option>{{end}}</select></label><label class="block"><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Message</span><textarea name="leave_message" rows="3" class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm leading-6 outline-none focus:border-indigo-500">{{deref .LeaveMessage}}</textarea></label></div>
   </section>
 
-  <button class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 font-medium transition">Save changes</button>
+  <section class="rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-6 shadow-xl shadow-black/10">
+    <div class="flex items-center justify-between"><div><h2 class="text-lg font-semibold">Message style</h2><p class="mt-1 text-sm text-zinc-500">Embeds keep the Discord message compact and polished.</p></div><label class="inline-flex cursor-pointer items-center gap-3 text-sm"><input type="checkbox" name="use_embed" {{if .UseEmbed}}checked{{end}} class="h-4 w-4 accent-indigo-500"><span>Use embeds</span></label></div>
+  </section>
+
+  <button class="w-full rounded-xl bg-indigo-600 px-5 py-3 font-semibold transition hover:bg-indigo-500 md:w-auto">Save welcome settings</button>
 </form>
-
-<section class="max-w-3xl mt-5 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
-  <div class="flex items-center justify-between mb-5"><div><h2 class="font-medium">Custom welcome image</h2><p class="text-xs text-zinc-500 mt-1">Upload a PNG, JPEG or GIF. It becomes the background of the generated welcome card.</p></div>{{if .JoinImagePath}}<span class="rounded-full bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400">Custom image active</span>{{else}}<span class="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-400">Default background</span>{{end}}</div>
-  {{if .JoinImagePath}}<div class="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 mb-4"><img src="/dashboard/{{$.GuildID}}/welcome-image" alt="Current welcome background" class="w-full max-h-64 object-cover"></div>{{end}}
-  <form method="post" enctype="multipart/form-data" action="/dashboard/{{$.GuildID}}/welcome-image" class="space-y-3">
-    <input type="file" name="welcome_image" accept="image/png,image/jpeg,image/gif" required class="block w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-300 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3 file:py-2 file:text-sm file:text-zinc-200">
-    <div class="flex gap-3"><button class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-sm font-medium transition">Upload image</button>{{if .JoinImagePath}}<button type="submit" formaction="/dashboard/{{$.GuildID}}/welcome-image/remove" class="rounded-xl border border-zinc-700 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-900">Remove image</button>{{end}}</div>
-  </form>
-  <p class="text-xs text-zinc-600 mt-3">Maximum size: 10 MB. The image is stored locally with the bot and is not committed to GitHub.</p>
-</section>
 {{end}}
 {{template "foot" .}}
