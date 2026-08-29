@@ -48,12 +48,16 @@ func (h *Handlers) handleWelcomeJoin(s *discordgo.Session, m *discordgo.GuildMem
 				serverName = g.Name
 				memberCount = g.MemberCount
 			}
+			backgroundURL := ""
+			if cfg.JoinImageURL != nil {
+				backgroundURL = strings.TrimSpace(*cfg.JoinImageURL)
+			}
 			card, err = levelsvc.RenderWelcomeCard(ctx, levelsvc.WelcomeCardData{
 				Username:       m.User.Username,
 				AvatarURL:      discordutil.AvatarURL(m.User),
 				ServerName:     serverName,
 				MemberCount:    memberCount,
-				BackgroundPath: derefString(cfg.JoinImagePath),
+				BackgroundURL:  backgroundURL,
 			})
 			if err != nil {
 				log.Warn().Err(err).Str("guild", m.GuildID).Msg("welcome: render card")
@@ -68,13 +72,6 @@ func (h *Handlers) handleWelcomeJoin(s *discordgo.Session, m *discordgo.GuildMem
 			sendWelcome(s, m.GuildID, ch.ID, renderWelcome(s, *cfg.JoinDMMessage, m.GuildID, m.User), cfg.UseEmbed, "Welcome", nil)
 		}
 	}
-}
-
-func derefString(p *string) string {
-	if p == nil {
-		return ""
-	}
-	return *p
 }
 
 func (h *Handlers) handleWelcomeLeave(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
