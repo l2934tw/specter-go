@@ -4,34 +4,38 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{.Title}} · Specter</title>
 <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/htmx.org@1.9.12"></script>
-<style>html{color-scheme:dark}body{background:#09090b}.nav-link{transition:background-color .15s,border-color .15s,color .15s}.nav-link:hover{background:#18181b}.panel{box-shadow:0 10px 30px rgba(0,0,0,.16)}</style>
+<style>
+html{color-scheme:dark}body{background:#07080c}.app-shell{min-height:100vh}.sidebar{background:#0b0d12;border-right:1px solid #20232d}.surface{background:#0f1118;border:1px solid #20232d}.surface-soft{background:#0c0f15;border:1px solid #1c2029}.nav-item{transition:.18s ease;border:1px solid transparent}.nav-item:hover{background:#151923;color:#fff}.nav-item.active{background:#191d29;border-color:#2a3040;color:#fff}.input{background:#090b10;border:1px solid #262b36}.input:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.10)}.btn{transition:.18s ease}.btn-primary{background:#6366f1}.btn-primary:hover{background:#7476f5}.stat{background:linear-gradient(180deg,#12151d,#0e1016)}.muted{color:#8b91a1}.eyebrow{color:#818cf8;letter-spacing:.14em}.range{accent-color:#6366f1}.scrollbar::-webkit-scrollbar{width:7px}.scrollbar::-webkit-scrollbar-thumb{background:#272b35;border-radius:99px}@media(max-width:900px){.desktop-sidebar{display:none}.mobile-nav{display:flex!important}}
+</style>
 </head>
-<body class="min-h-screen bg-zinc-950 text-zinc-100">
-<header class="sticky top-0 z-20 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
-  <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 lg:px-8">
-    <a href="/dashboard" class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold">S</span><span class="text-lg font-semibold tracking-tight">Specter</span></a>
-    <div class="flex items-center gap-4 text-sm text-zinc-400">{{if .Username}}<span>{{.Username}}</span><a class="rounded-lg px-3 py-2 transition hover:bg-zinc-900 hover:text-white" href="/logout">Log out</a>{{end}}</div>
-  </div>
-</header>
-<main class="mx-auto max-w-6xl px-5 py-8 lg:px-8">{{end}}
-
-{{define "guildnav"}}
-<div class="mb-8 overflow-x-auto"><nav class="flex min-w-max gap-1 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-1.5 text-sm">
-{{$g := .GuildID}}
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}">Overview</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/levels">Levels</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/levelroles">Rewards</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/welcome">Welcome</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/automod">Automod</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/autorole">Autorole</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/starboard">Starboard</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/modlogs">Mod Logs</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/modnotify">Mod DMs</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/reactionroles">Reaction Roles</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/access">Access</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/rapsheets">Rapsheets</a>
-<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/audit">Audit</a>
-<a class="rounded-xl bg-indigo-600 px-3 py-2 font-medium text-white transition hover:bg-indigo-500" href="/music-player/{{$g}}">Music</a>
-</nav></div>{{end}}
-
-{{define "foot"}}</main><footer class="mx-auto max-w-6xl px-5 py-8 text-xs text-zinc-600 lg:px-8">Specter administration dashboard</footer></body></html>{{end}}
+<body class="min-h-screen bg-[#07080c] text-zinc-100">
+<div class="app-shell flex">
+<aside class="desktop-sidebar sticky top-0 hidden h-screen w-64 shrink-0 flex-col lg:flex sidebar">
+  <div class="flex h-20 items-center gap-3 border-b border-[#20232d] px-5"><div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500 text-sm font-black text-white">S</div><div><div class="font-bold tracking-tight">Specter</div><div class="text-[11px] text-zinc-500">SERVER CONTROL</div></div></div>
+  {{if .Guild}}<div class="px-4 py-4"><div class="surface-soft rounded-2xl p-3"><div class="text-[10px] uppercase tracking-widest text-zinc-600">Managing</div><div class="mt-1 truncate text-sm font-semibold">{{.Guild.Name}}</div><div class="mt-1 truncate text-xs text-zinc-600">{{.GuildID}}</div></div></div>{{end}}
+  <div class="scrollbar flex-1 overflow-y-auto px-3 pb-4">{{if .GuildID}}<div class="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Configure</div>
+  <nav class="space-y-1">
+  <a class="nav-item {{if eq .Title "Overview"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}"><span>⌂</span>Overview</a>
+  <a class="nav-item {{if eq .Title "Level Settings"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/levels"><span>↗</span>Levels &amp; XP</a>
+  <a class="nav-item {{if eq .Title "Welcome Messages"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/welcome"><span>✦</span>Welcome</a>
+  <a class="nav-item {{if eq .Title "Autorole"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/autorole"><span>♢</span>Autoroles</a>
+  <a class="nav-item {{if eq .Title "Reaction Roles"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/reactionroles"><span>☷</span>Reaction Roles</a>
+  <a class="nav-item {{if eq .Title "Starboard"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/starboard"><span>★</span>Starboard</a>
+  <div class="my-4 border-t border-[#1c2029]"></div><div class="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Safety</div>
+  <a class="nav-item {{if eq .Title "Automod Settings"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/automod"><span>◈</span>Automod</a>
+  <a class="nav-item {{if eq .Title "Mod Log Settings"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/modlogs"><span>≡</span>Mod Logs</a>
+  <a class="nav-item {{if eq .Title "Mod DM Settings"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/modnotify"><span>◌</span>Mod DMs</a>
+  <a class="nav-item {{if eq .Title "Access Control"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/access"><span>⌁</span>Access</a>
+  <div class="my-4 border-t border-[#1c2029]"></div><div class="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-zinc-600">Tools</div>
+  <a class="nav-item {{if eq .Title "Rapsheets"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/rapsheets"><span>▤</span>Rapsheets</a>
+  <a class="nav-item {{if eq .Title "Audit Log"}}active{{end}} flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/dashboard/{{.GuildID}}/audit"><span>◷</span>Audit</a>
+  <a class="nav-item flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-zinc-400" href="/music-player/{{.GuildID}}"><span>♫</span>Music</a>
+  </nav>{{end}}</div>
+  <div class="border-t border-[#20232d] p-4"><div class="flex items-center justify-between gap-3"><div class="min-w-0"><div class="truncate text-xs font-medium">{{.Username}}</div><div class="text-[10px] text-zinc-600">Administrator</div></div><a href="/logout" class="rounded-lg px-2 py-1.5 text-xs text-zinc-500 hover:bg-zinc-900 hover:text-white">Log out</a></div></div>
+</aside>
+<main class="min-w-0 flex-1">
+<header class="sticky top-0 z-20 border-b border-[#20232d] bg-[#07080c]/90 backdrop-blur-xl"><div class="flex h-16 items-center justify-between px-5 lg:px-8"><div class="flex items-center gap-3"><div class="mobile-nav hidden h-9 w-9 items-center justify-center rounded-lg bg-indigo-500 text-sm font-black">S</div><div class="lg:hidden"><div class="text-sm font-semibold">Specter</div><div class="text-[10px] text-zinc-600">{{if .Guild}}{{.Guild.Name}}{{else}}Dashboard{{end}}</div></div></div><div class="flex items-center gap-3 text-xs text-zinc-500"><span class="hidden sm:inline">{{.Username}}</span><span class="h-2 w-2 rounded-full bg-emerald-400"></span><span>Online</span></div></div></header>
+<div class="mx-auto max-w-[1400px] px-5 py-7 lg:px-10 lg:py-10">
+{{end}}
+{{define "guildnav"}}{{end}}
+{{define "foot"}}</div></main></div></body></html>{{end}}
