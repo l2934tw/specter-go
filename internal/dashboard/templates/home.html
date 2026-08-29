@@ -1,20 +1,13 @@
 {{template "head" .}}
-<h1 class="text-2xl font-semibold mb-6">Your Servers</h1>
-<div class="grid gap-3 sm:grid-cols-2">
-  {{range .Data.Guilds}}
-    <div class="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4 flex items-center justify-between">
-      <div>
-        <div class="font-medium">{{.Name}}</div>
-        <div class="text-xs text-zinc-500">{{.ID}}</div>
-      </div>
-      {{if .HasBot}}
-        <a href="/dashboard/{{.ID}}" class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-sm">Manage</a>
-      {{else}}
-        <span class="px-3 py-1.5 rounded-md bg-zinc-800 text-zinc-500 text-sm">Not added</span>
-      {{end}}
-    </div>
-  {{else}}
-    <p class="text-zinc-400">No manageable servers found.</p>
-  {{end}}
+<div class="mb-10 max-w-3xl"><div class="eyebrow text-xs font-bold uppercase">Command center</div><h1 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Your servers, <span class="text-indigo-400">under control.</span></h1><p class="mt-4 text-sm leading-6 text-zinc-500 sm:text-base">Choose a server to configure moderation, leveling, welcome experiences, roles, music and more. Everything is saved per server.</p></div>
+<div class="mb-5 flex items-center justify-between"><div><h2 class="text-lg font-semibold">Servers</h2><p class="text-xs text-zinc-600">Servers you can manage with Specter</p></div><span class="rounded-full border border-[#252936] bg-[#0d1016] px-3 py-1.5 text-xs text-zinc-500">{{len .Data.Guilds}} available</span></div>
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+{{range .Data.Guilds}}
+<a href="{{if .HasBot}}/dashboard/{{.ID}}{{else}}#{{end}}" class="group surface rounded-2xl p-5 transition hover:-translate-y-0.5 hover:border-[#343a49] {{if not .HasBot}}opacity-70{{end}}">
+<div class="flex items-start justify-between gap-4"><div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-lg font-bold text-indigo-300">{{printf "%.1s" .Name}}</div>{{if .HasBot}}<span class="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-400">CONNECTED</span>{{else}}<span class="rounded-full bg-zinc-800 px-2.5 py-1 text-[10px] font-semibold text-zinc-500">NOT ADDED</span>{{end}}</div>
+<div class="mt-5 truncate font-semibold">{{.Name}}</div><div class="mt-1 truncate text-xs text-zinc-600">{{.ID}}</div>
+<div class="mt-5 flex items-center justify-between text-xs">{{if .HasBot}}<span class="text-zinc-500">Open control center</span><span class="text-indigo-300 transition group-hover:translate-x-1">→</span>{{else}}<span class="text-zinc-600">Add Specter to this server first</span>{{end}}</div>
+</a>
+{{else}}<div class="surface col-span-full rounded-2xl p-10 text-center"><div class="text-lg font-semibold">No manageable servers</div><p class="mt-2 text-sm text-zinc-500">Discord did not return any servers you can administer.</p></div>{{end}}
 </div>
 {{template "foot" .}}
