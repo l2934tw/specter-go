@@ -1,34 +1,11 @@
 {{template "head" .}}
 {{template "guildnav" .}}
-<div class="mb-7"><p class="text-xs uppercase tracking-[0.2em] text-indigo-400 mb-2">Progression</p><h1 class="text-3xl font-semibold tracking-tight">Level Settings</h1><p class="text-zinc-500 text-sm mt-2">Tune XP, cooldowns and where level-up cards are announced.</p></div>
+<div class="mb-8"><div class="flex items-center gap-3 mb-3"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">↗</span><div><p class="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-400">Progression</p><h1 class="text-3xl font-semibold tracking-tight">Levels</h1></div></div><p class="max-w-2xl text-sm leading-6 text-zinc-400">Tune XP progression and choose exactly where your polished level-up cards should appear.</p></div>
 {{with .Data.Config}}
-<form method="post" class="max-w-3xl space-y-5">
-  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
-    <div class="flex items-center justify-between"><div><h2 class="font-medium">Leveling system</h2><p class="text-xs text-zinc-500 mt-1">Members earn random XP from messages.</p></div><label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="enabled" {{if .Enabled}}checked{{end}}><span>Enabled</span></label></div>
-  </section>
-
-  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
-    <h2 class="font-medium mb-1">XP rules</h2><p class="text-xs text-zinc-500 mb-5">Control how quickly members progress.</p>
-    <div class="grid gap-4 md:grid-cols-3">
-      <div><label class="block text-xs text-zinc-400 mb-2">XP minimum</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5" type="number" min="0" name="xp_min" value="{{.XPMin}}"></div>
-      <div><label class="block text-xs text-zinc-400 mb-2">XP maximum</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5" type="number" min="0" name="xp_max" value="{{.XPMax}}"></div>
-      <div><label class="block text-xs text-zinc-400 mb-2">Cooldown (seconds)</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5" type="number" min="0" name="cooldown" value="{{.XPCooldownSecs}}"></div>
-    </div>
-  </section>
-
-  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
-    <h2 class="font-medium mb-1">Level-up announcements</h2><p class="text-xs text-zinc-500 mb-5">A generated card is sent automatically whenever a member levels up.</p>
-    {{$sel := deref .AnnounceChannelID}}
-    <div><label class="block text-xs text-zinc-400 mb-2">Announcement channel</label><select name="announce_channel" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5"><option value="">Same channel as message</option>{{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $sel}}selected{{end}}>#{{.Name}}</option>{{end}}</select></div>
-    <div class="mt-4"><label class="block text-xs text-zinc-400 mb-2">Announcement text <span class="text-zinc-600">({user}, {level})</span></label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5" name="announce_msg" value="{{deref .AnnounceMsg}}"></div>
-  </section>
-
-  <section class="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5 shadow-sm">
-    <h2 class="font-medium mb-1">XP exclusions</h2><p class="text-xs text-zinc-500 mb-5">Comma-separated Discord IDs that should not receive XP.</p>
-    <div class="grid gap-4 md:grid-cols-2"><div><label class="block text-xs text-zinc-400 mb-2">Roles</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5" name="no_xp_roles" value="{{join .NoXPRoles}}"></div><div><label class="block text-xs text-zinc-400 mb-2">Channels</label><input class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5" name="no_xp_channels" value="{{join .NoXPChannels}}"></div></div>
-  </section>
-
-  <button class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 font-medium transition">Save changes</button>
-</form>
-{{end}}
-{{template "foot" .}}
+<form method="post" class="max-w-4xl space-y-5">
+<section class="panel rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-6"><div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><h2 class="text-lg font-semibold">Leveling system</h2><p class="mt-1 text-sm text-zinc-500">Members earn random XP from eligible messages.</p></div><label class="inline-flex cursor-pointer items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-2.5 text-sm"><input type="checkbox" name="enabled" {{if .Enabled}}checked{{end}} class="h-4 w-4 accent-indigo-500"><span>Enable leveling</span></label></div></section>
+<section class="panel rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-6"><h2 class="text-lg font-semibold">XP rules</h2><p class="mt-1 text-sm text-zinc-500">Control the range and pacing of XP gains.</p><div class="mt-5 grid gap-4 md:grid-cols-3"><label><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Minimum XP</span><input class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 outline-none focus:border-indigo-500" type="number" min="0" name="xp_min" value="{{.XPMin}}"></label><label><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Maximum XP</span><input class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 outline-none focus:border-indigo-500" type="number" min="0" name="xp_max" value="{{.XPMax}}"></label><label><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Cooldown</span><input class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 outline-none focus:border-indigo-500" type="number" min="0" name="cooldown" value="{{.XPCooldownSecs}}"><span class="mt-2 block text-xs text-zinc-600">Seconds between XP awards</span></label></div></section>
+<section class="panel rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-6"><div class="flex items-start justify-between gap-4"><div><h2 class="text-lg font-semibold">Level-up announcements</h2><p class="mt-1 text-sm text-zinc-500">A card is sent automatically whenever a member reaches a new level.</p></div><span class="rounded-full bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-300">Image cards</span></div>{{$sel := deref .AnnounceChannelID}}<label class="mt-5 block"><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Announcement channel</span><select name="announce_channel" class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 outline-none focus:border-indigo-500"><option value="">Same channel as message</option>{{range $.Data.Channels}}<option value="{{.ID}}" {{if eq .ID $sel}}selected{{end}}>#{{.Name}}</option>{{end}}</select></label><label class="mt-5 block"><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Announcement text</span><input class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 outline-none focus:border-indigo-500" name="announce_msg" value="{{deref .AnnounceMsg}}"><span class="mt-2 block text-xs text-zinc-600">Placeholders: <code>{user}</code> <code>{level}</code></span></label></section>
+<section class="panel rounded-3xl border border-zinc-800/90 bg-zinc-900/60 p-6"><h2 class="text-lg font-semibold">XP exclusions</h2><p class="mt-1 text-sm text-zinc-500">Comma-separated Discord IDs that should not receive XP.</p><div class="mt-5 grid gap-4 md:grid-cols-2"><label><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Roles</span><input class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 outline-none focus:border-indigo-500" name="no_xp_roles" value="{{join .NoXPRoles}}"></label><label><span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Channels</span><input class="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-3 outline-none focus:border-indigo-500" name="no_xp_channels" value="{{join .NoXPChannels}}"></label></div></section>
+<button class="rounded-xl bg-indigo-600 px-5 py-3 font-semibold transition hover:bg-indigo-500">Save level settings</button>
+</form>{{end}}{{template "foot" .}}
