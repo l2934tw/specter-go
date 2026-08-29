@@ -1,6 +1,7 @@
 package events
 
 import (
+	"bytes"
 	"context"
 	"strconv"
 	"strings"
@@ -9,10 +10,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/rs/zerolog/log"
 
-	"github.com/0xSalik/specter/internal/db/queries"
-	levelsvc "github.com/0xSalik/specter/internal/levels"
 	"github.com/0xSalik/specter/internal/discordutil"
 	"github.com/0xSalik/specter/internal/embed"
+	levelsvc "github.com/0xSalik/specter/internal/levels"
 )
 
 const (
@@ -20,8 +20,6 @@ const (
 	defaultLeaveMessage = "{username} has left {server}. We now have {membercount} members."
 )
 
-// handleWelcomeJoin posts the configured welcome message and, when enabled,
-// a generated welcome card to the configured channel. Failures are logged.
 func (h *Handlers) handleWelcomeJoin(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 	if m.User == nil {
 		return
@@ -51,9 +49,9 @@ func (h *Handlers) handleWelcomeJoin(s *discordgo.Session, m *discordgo.GuildMem
 				memberCount = g.MemberCount
 			}
 			card, err = levelsvc.RenderWelcomeCard(ctx, levelsvc.WelcomeCardData{
-				Username: m.User.Username,
-				AvatarURL: discordutil.AvatarURL(m.User),
-				ServerName: serverName,
+				Username:    m.User.Username,
+				AvatarURL:   discordutil.AvatarURL(m.User),
+				ServerName:  serverName,
 				MemberCount: memberCount,
 			})
 			if err != nil {
@@ -97,19 +95,23 @@ func sendWelcome(s *discordgo.Session, guildID, channelID, text string, useEmbed
 	if strings.TrimSpace(text) == "" && len(card) == 0 {
 		return
 	}
+
 	if len(card) > 0 {
+		msg := &discordgo.MessageSend{
+			Files: []*discordgo.File{{Name: "welcome.png", ContentType: "image/png", Reader: bytes.NewReader(card)}},
+		}
 		if useEmbed {
-			e := embed.New(s, guildID).Title(title).Description(text).Image("attachment://welcome.png").Build()
-			_, err := s.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
-				Embed: e,
-				Files: []*discordgo.File{{Name: "welcome.png", ContentType: "image/png", Reader: strings.NewReader(string(card))}},
-			})
-			if err == nil {
-				return
-			}
+			msg.Embed = embed.New(s, guildID).Title(title).Description(text).Image("attachment://welcome.png").Build()
+		} else {
+			msg.Content = text
+		}
+		if _, err := s.ChannelMessageSendComplex(channelID, msg); err == nil {
+			return
+		} else {
 			log.Warn().Err(err).Str("guild", guildID).Msg("welcome: send card")
 		}
 	}
+
 	if useEmbed {
 		e := embed.New(s, guildID).Title(title).Description(text).Build()
 		_, _ = s.ChannelMessageSendEmbed(channelID, e)
@@ -163,5 +165,3 @@ func (h *Handlers) applyAutorole(s *discordgo.Session, m *discordgo.GuildMemberA
 		}
 	}
 }
-
-var _ = queries.WelcomeConfig{}
