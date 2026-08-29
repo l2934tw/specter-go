@@ -6,18 +6,32 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+	"io"
+	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/fogleman/gg"
 )
 
-type WelcomeCardData struct { Username string; AvatarURL string; ServerName string; MemberCount int; BackgroundPath string }
+type WelcomeCardData struct {
+	Username      string
+	AvatarURL     string
+	ServerName    string
+	MemberCount   int
+	BackgroundURL string
+}
+
 type LevelUpCardData struct { Username string; AvatarURL string; Level int; Rank int; XP int64 }
 
 func RenderWelcomeCard(ctx context.Context, d WelcomeCardData) ([]byte, error) {
 	const w, h = 1000, 300
 	dc := gg.NewContext(w, h)
-	if bg := loadImage(d.BackgroundPath); bg != nil {
+	if bg := fetchBackground(ctx, d.BackgroundURL); bg != nil {
 		dc.DrawImageAnchored(coverImage(bg, w, h), w/2, h/2, 0.5, 0.5)
 		dc.SetRGBA(0.02, 0.025, 0.04, 0.58)
 		dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26); dc.Fill()
@@ -52,6 +66,29 @@ func RenderLevelUpCard(ctx context.Context, d LevelUpCardData) ([]byte, error) {
 	return encodePNG(dc)
 }
 
+func fetchBackground(ctx context.Context, rawURL string) image.Image {
+	rawURL = strings.TrimSpace(rawURL)
+	if rawURL == "" || !(strings.HasPrefix(rawURL, "https://") || strings.HasPrefix(rawURL, "http://")) { return nil }
+	reqCtx, cancel := context.WithTimeout(ctx, 6*time.Second); defer cancel()
+	req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, rawURL, nil); if err != nil { return nil }
+	resp, err := http.DefaultClient.Do(req); if err != nil { return nil }; defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 { return nil }
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 10<<20)); if err != nil || len(data) == 0 || len(data) > 10<<20 { return nil }
+	img, _, err := image.Decode(bytes.NewReader(data)); if err != nil { return nil }
+	return img
+}
+
+func fetchAvatar(ctx context.Context, url string) image.Image {
+	if url == "" { return nil }
+	reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second); defer cancel()
+	req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, url, nil); if err != nil { return nil }
+	resp, err := http.DefaultClient.Do(req); if err != nil { return nil }; defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK { return nil }
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 8<<20)); if err != nil { return nil }
+	img, _, err := image.Decode(bytes.NewReader(data)); if err != nil { return nil }
+	return img
+}
+
 func loadImage(path string) image.Image { if path == "" { return nil }; f, err := os.Open(path); if err != nil { return nil }; defer f.Close(); img, _, err := image.Decode(f); if err != nil { return nil }; return img }
 
 func coverImage(src image.Image, width, height int) image.Image {
@@ -67,5 +104,6 @@ func resizeImage(src image.Image, width, height int) image.Image {
 	return dst
 }
 
+func resizeToSquare(src image.Image, size int) image.Image { return resizeImage(src, size, size) }
 func encodePNG(dc *gg.Context) ([]byte, error) { var buf bytes.Buffer; if err := dc.EncodePNG(&buf); err != nil { return nil, fmt.Errorf("encode card: %w", err) }; return buf.Bytes(), nil }
 func truncate(s string, max int) string { r := []rune(s); if len(r) <= max { return s }; return string(r[:max-1])+"…" }
