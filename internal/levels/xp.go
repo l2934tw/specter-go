@@ -3,6 +3,7 @@
 package levels
 
 import (
+	"bytes"
 	"context"
 	"math"
 	"math/rand"
@@ -195,20 +196,19 @@ func (e *Engine) announce(ctx context.Context, s *discordgo.Session, m *discordg
 		msg = renderAnnounce(*cfg.AnnounceMsg, m.Author.ID, level)
 	}
 
-	// Prefer the image announcement, while preserving a normal embed fallback.
 	rank, rankErr := e.store.GetRank(ctx, m.GuildID, m.Author.ID)
 	card, cardErr := RenderLevelUpCard(ctx, LevelUpCardData{
-		Username: m.Author.Username,
+		Username:  m.Author.Username,
 		AvatarURL: discordutil.AvatarURL(m.Author),
-		Level: level,
-		Rank: rank,
-		XP: xp,
+		Level:     level,
+		Rank:      rank,
+		XP:        xp,
 	})
 	if cardErr == nil && rankErr == nil {
 		em := embed.New(s, m.GuildID).Title("Level Up").Description(msg).Image("attachment://levelup.png").Build()
 		_, err := s.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 			Embed: em,
-			Files: []*discordgo.File{{Name: "levelup.png", ContentType: "image/png", Reader: bytesReader(card)}},
+			Files: []*discordgo.File{{Name: "levelup.png", ContentType: "image/png", Reader: bytes.NewReader(card)}},
 		})
 		if err == nil {
 			return
