@@ -52,9 +52,9 @@ plugins:
     allowDirectPlaylistIds: true
 
     clients:
-      - WEB
       - MUSIC
-      - ANDROID_VR
+      - WEB
+      - TVHTML5EMBEDDED
 
   lavasrc:
     sources:
