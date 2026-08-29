@@ -18,40 +18,23 @@ import (
 	"github.com/fogleman/gg"
 )
 
-type WelcomeCardData struct {
-	Username      string
-	AvatarURL     string
-	ServerName    string
-	MemberCount   int
-	BackgroundURL string
-	BackgroundZoom int
-	BackgroundPosX int
-	BackgroundPosY int
-}
-
+type WelcomeCardData struct { Username string; AvatarURL string; ServerName string; MemberCount int; BackgroundURL string; BackgroundZoom int; BackgroundPosX int; BackgroundPosY int }
 type LevelUpCardData struct { Username string; AvatarURL string; Level int; Rank int; XP int64 }
 
 func RenderWelcomeCard(ctx context.Context, d WelcomeCardData) ([]byte, error) {
 	const w, h = 1080, 1080
 	dc := gg.NewContext(w, h)
-	zoom := d.BackgroundZoom
-	if zoom < 50 || zoom > 200 { zoom = 100 }
-	posX, posY := d.BackgroundPosX, d.BackgroundPosY
-	if posX < 0 || posX > 100 { posX = 50 }
-	if posY < 0 || posY > 100 { posY = 50 }
+	zoom := d.BackgroundZoom; if zoom < 100 || zoom > 200 { zoom = 100 }
+	posX, posY := d.BackgroundPosX, d.BackgroundPosY; if posX < 0 || posX > 100 { posX = 50 }; if posY < 0 || posY > 100 { posY = 50 }
 	if bg := fetchBackground(ctx, d.BackgroundURL); bg != nil {
 		covered := coverImage(bg, w, h)
 		if zoom != 100 { covered = resizeImage(covered, int(float64(w)*float64(zoom)/100), int(float64(h)*float64(zoom)/100)) }
-		b := covered.Bounds()
-		x := int(float64(b.Dx()-w) * float64(posX) / 100)
-		y := int(float64(b.Dy()-h) * float64(posY) / 100)
+		b := covered.Bounds(); x := int(float64(b.Dx()-w)*float64(posX)/100); y := int(float64(b.Dy()-h)*float64(posY)/100)
 		if x < 0 { x = 0 }; if y < 0 { y = 0 }
 		dc.DrawImage(covered, -x, -y)
-		dc.SetRGBA(0.02, 0.025, 0.04, 0.58)
-		dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26); dc.Fill()
+		dc.SetRGBA(0.02, 0.025, 0.04, 0.58); dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26); dc.Fill()
 	} else {
-		dc.SetRGB(0.045, 0.050, 0.070); dc.Clear(); dc.SetRGB(0.075, 0.085, 0.115)
-		dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26); dc.Fill()
+		dc.SetRGB(0.045, 0.050, 0.070); dc.Clear(); dc.SetRGB(0.075, 0.085, 0.115); dc.DrawRoundedRectangle(18, 18, w-36, h-36, 26); dc.Fill()
 	}
 	dc.SetRGB(0.38, 0.42, 0.98); dc.DrawRoundedRectangle(42, 42, 8, 216, 4); dc.Fill()
 	const ax, ay, ar = 150.0, 150.0, 70.0
@@ -80,44 +63,11 @@ func RenderLevelUpCard(ctx context.Context, d LevelUpCardData) ([]byte, error) {
 	return encodePNG(dc)
 }
 
-func fetchBackground(ctx context.Context, rawURL string) image.Image {
-	rawURL = strings.TrimSpace(rawURL)
-	if rawURL == "" || !(strings.HasPrefix(rawURL, "https://") || strings.HasPrefix(rawURL, "http://")) { return nil }
-	reqCtx, cancel := context.WithTimeout(ctx, 6*time.Second); defer cancel()
-	req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, rawURL, nil); if err != nil { return nil }
-	resp, err := http.DefaultClient.Do(req); if err != nil { return nil }; defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 { return nil }
-	data, err := io.ReadAll(io.LimitReader(resp.Body, 10<<20)); if err != nil || len(data) == 0 || len(data) > 10<<20 { return nil }
-	img, _, err := image.Decode(bytes.NewReader(data)); if err != nil { return nil }
-	return img
-}
-
-func fetchAvatar(ctx context.Context, url string) image.Image {
-	if url == "" { return nil }
-	reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second); defer cancel()
-	req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, url, nil); if err != nil { return nil }
-	resp, err := http.DefaultClient.Do(req); if err != nil { return nil }; defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK { return nil }
-	data, err := io.ReadAll(io.LimitReader(resp.Body, 8<<20)); if err != nil { return nil }
-	img, _, err := image.Decode(bytes.NewReader(data)); if err != nil { return nil }
-	return img
-}
-
+func fetchBackground(ctx context.Context, rawURL string) image.Image { rawURL = strings.TrimSpace(rawURL); if rawURL == "" || !(strings.HasPrefix(rawURL, "https://") || strings.HasPrefix(rawURL, "http://")) { return nil }; reqCtx, cancel := context.WithTimeout(ctx, 6*time.Second); defer cancel(); req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, rawURL, nil); if err != nil { return nil }; resp, err := http.DefaultClient.Do(req); if err != nil { return nil }; defer resp.Body.Close(); if resp.StatusCode < 200 || resp.StatusCode >= 300 { return nil }; data, err := io.ReadAll(io.LimitReader(resp.Body, 10<<20)); if err != nil || len(data) == 0 || len(data) > 10<<20 { return nil }; img, _, err := image.Decode(bytes.NewReader(data)); if err != nil { return nil }; return img }
+func fetchAvatar(ctx context.Context, url string) image.Image { if url == "" { return nil }; reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second); defer cancel(); req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, url, nil); if err != nil { return nil }; resp, err := http.DefaultClient.Do(req); if err != nil { return nil }; defer resp.Body.Close(); if resp.StatusCode != http.StatusOK { return nil }; data, err := io.ReadAll(io.LimitReader(resp.Body, 8<<20)); if err != nil { return nil }; img, _, err := image.Decode(bytes.NewReader(data)); if err != nil { return nil }; return img }
 func loadImage(path string) image.Image { if path == "" { return nil }; f, err := os.Open(path); if err != nil { return nil }; defer f.Close(); img, _, err := image.Decode(f); if err != nil { return nil }; return img }
-
-func coverImage(src image.Image, width, height int) image.Image {
-	b := src.Bounds(); sw, sh := b.Dx(), b.Dy(); if sw <= 0 || sh <= 0 { return src }
-	scale := float64(width)/float64(sw); if v := float64(height)/float64(sh); v > scale { scale = v }
-	nw, nh := int(float64(sw)*scale), int(float64(sh)*scale); return resizeImage(src, nw, nh)
-}
-
-func resizeImage(src image.Image, width, height int) image.Image {
-	if width < 1 { width = 1 }; if height < 1 { height = 1 }
-	dst := image.NewRGBA(image.Rect(0, 0, width, height)); b := src.Bounds(); sw, sh := b.Dx(), b.Dy()
-	for y := 0; y < height; y++ { sy := b.Min.Y + y*sh/height; for x := 0; x < width; x++ { sx := b.Min.X + x*sw/width; dst.Set(x, y, src.At(sx, sy)) } }
-	return dst
-}
-
+func coverImage(src image.Image, width, height int) image.Image { b := src.Bounds(); sw, sh := b.Dx(), b.Dy(); if sw <= 0 || sh <= 0 { return src }; scale := float64(width)/float64(sw); if v := float64(height)/float64(sh); v > scale { scale = v }; nw, nh := int(float64(sw)*scale), int(float64(sh)*scale); return resizeImage(src, nw, nh) }
+func resizeImage(src image.Image, width, height int) image.Image { if width < 1 { width = 1 }; if height < 1 { height = 1 }; dst := image.NewRGBA(image.Rect(0, 0, width, height)); b := src.Bounds(); sw, sh := b.Dx(), b.Dy(); for y := 0; y < height; y++ { sy := b.Min.Y + y*sh/height; for x := 0; x < width; x++ { sx := b.Min.X + x*sw/width; dst.Set(x, y, src.At(sx, sy)) } }; return dst }
 func resizeToSquare(src image.Image, size int) image.Image { return resizeImage(src, size, size) }
 func encodePNG(dc *gg.Context) ([]byte, error) { var buf bytes.Buffer; if err := dc.EncodePNG(&buf); err != nil { return nil, fmt.Errorf("encode card: %w", err) }; return buf.Bytes(), nil }
 func truncate(s string, max int) string { r := []rune(s); if len(r) <= max { return s }; return string(r[:max-1])+"…" }
