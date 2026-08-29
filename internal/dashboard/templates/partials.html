@@ -1,42 +1,37 @@
 {{define "head"}}<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{.Title}} · Specter</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<style>html{color-scheme:dark}body{background:#09090b}.nav-link{transition:background-color .15s,border-color .15s,color .15s}.nav-link:hover{background:#18181b}.panel{box-shadow:0 10px 30px rgba(0,0,0,.16)}</style>
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen">
-<header class="border-b border-zinc-800 bg-zinc-900/60">
-  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-    <a href="/dashboard" class="text-lg font-semibold tracking-tight">Specter</a>
-    <div class="text-sm text-zinc-400">
-      {{if .Username}}<span class="mr-3">{{.Username}}</span><a class="text-indigo-400 hover:underline" href="/logout">Log out</a>{{end}}
-    </div>
+<body class="min-h-screen bg-zinc-950 text-zinc-100">
+<header class="sticky top-0 z-20 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 lg:px-8">
+    <a href="/dashboard" class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold">S</span><span class="text-lg font-semibold tracking-tight">Specter</span></a>
+    <div class="flex items-center gap-4 text-sm text-zinc-400">{{if .Username}}<span>{{.Username}}</span><a class="rounded-lg px-3 py-2 transition hover:bg-zinc-900 hover:text-white" href="/logout">Log out</a>{{end}}</div>
   </div>
 </header>
-<main class="max-w-5xl mx-auto px-6 py-8">{{end}}
+<main class="mx-auto max-w-6xl px-5 py-8 lg:px-8">{{end}}
 
 {{define "guildnav"}}
-<nav class="mb-8 flex flex-wrap gap-2 text-sm">
-  {{$g := .GuildID}}
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}">Overview</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/levels">Levels</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/levelroles">Level Rewards</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/automod">Automod</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/welcome">Welcome</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/autorole">Autorole</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/starboard">Starboard</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/modlogs">Mod Logs</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/modnotify">Mod DMs</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/reactionroles">Reaction Roles</a>
-  <a class="px-3 py-1.5 rounded-md bg-indigo-600/80 hover:bg-indigo-500" href="/music-player/{{$g}}">Music Player</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/access">Access</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/rapsheets">Rapsheets</a>
-  <a class="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700" href="/dashboard/{{$g}}/audit">Audit</a>
-</nav>{{end}}
+<div class="mb-8 overflow-x-auto"><nav class="flex min-w-max gap-1 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-1.5 text-sm">
+{{$g := .GuildID}}
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}">Overview</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/levels">Levels</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/levelroles">Rewards</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/welcome">Welcome</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/automod">Automod</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/autorole">Autorole</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/starboard">Starboard</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/modlogs">Mod Logs</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/modnotify">Mod DMs</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/reactionroles">Reaction Roles</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/access">Access</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/rapsheets">Rapsheets</a>
+<a class="nav-link rounded-xl px-3 py-2 text-zinc-400 hover:text-white" href="/dashboard/{{$g}}/audit">Audit</a>
+<a class="rounded-xl bg-indigo-600 px-3 py-2 font-medium text-white transition hover:bg-indigo-500" href="/music-player/{{$g}}">Music</a>
+</nav></div>{{end}}
 
-{{define "foot"}}</main>
-<footer class="max-w-5xl mx-auto px-6 py-8 text-xs text-zinc-600">Specter administration dashboard</footer>
-</body></html>{{end}}
+{{define "foot"}}</main><footer class="mx-auto max-w-6xl px-5 py-8 text-xs text-zinc-600 lg:px-8">Specter administration dashboard</footer></body></html>{{end}}
